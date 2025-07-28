@@ -15,6 +15,46 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">
+                        {{ __('Sales') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
+                        {{ __('Customers') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('vehicles.index')" :active="request()->routeIs('vehicles.*')">
+                        {{ __('Vehicles') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
+                        {{ __('Products') }}
+                    </x-nav-link>
+                </div>
+                
+                <!-- Responsive Navigation Menu -->
+                <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
+                    <div class="pt-2 pb-3 space-y-1">
+                    <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                        {{ __('Dashboard') }}
+                    </x-responsive-nav-link>
+
+                    <x-responsive-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">
+                        {{ __('Sales') }}
+                    </x-responsive-nav-link>
+
+                    <x-responsive-nav-link :href="route('sales.create')" :active="request()->routeIs('sales.create')">
+                        {{ __('Input Transaksi') }}
+                    </x-responsive-nav-link>
+
+                    <x-responsive-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
+                        {{ __('Customers') }}
+                    </x-responsive-nav-link>
+
+                    <x-responsive-nav-link :href="route('vehicles.index')" :active="request()->routeIs('vehicles.*')">
+                        {{ __('Vehicles') }}
+                    </x-responsive-nav-link>
+
+                    <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
+                        {{ __('Products') }}
+                    </x-responsive-nav-link>
                 </div>
             </div>
 

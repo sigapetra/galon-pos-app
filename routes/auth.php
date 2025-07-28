@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\SaleController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -57,3 +58,34 @@ Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 });
+
+// Sales routes
+Route::resource('sales', SaleController::class)->middleware(['auth']);
+Route::get('sales/export', [SaleController::class, 'export'])->name('sales.export')->middleware(['auth']);
+Route::get('sales/export/{format}', [SaleController::class, 'export'])->name('sales.export.format')->middleware(['auth']);
+Route::get('sales/export/{format}/{startDate}/{endDate}', [SaleController::class, 'export'])->name('sales.export.date')->middleware(['auth']);
+Route::get('sales/export/{format}/{startDate}/{endDate}/{customerId}', [SaleController::class, 'export'])->name('sales.export.customer')->middleware(['auth']);
+// Route to get sales data for a specific customer
+Route::get('sales/customer/{customerId}', [SaleController::class, 'getSalesByCustomer'])
+    ->name('sales.customer')
+    ->middleware(['auth']);
+// Route to get sales data for a specific vehicle
+Route::get('sales/vehicle/{vehicleId}', [SaleController::class, 'getSalesByVehicle'])
+    ->name('sales.vehicle')
+    ->middleware(['auth']);
+// Route to get sales data for a specific date range
+Route::get('sales/date-range/{startDate}/{endDate}', [SaleController::class, 'getSalesByDateRange'])
+    ->name('sales.date-range')
+    ->middleware(['auth']);
+// Route to get sales data for a specific product
+Route::get('sales/product/{productId}', [SaleController::class, 'getSalesByProduct'])
+    ->name('sales.product')
+    ->middleware(['auth']);
+// Route to get sales data for a specific user
+Route::get('sales/user/{userId}', [SaleController::class, 'getSalesByUser'])
+    ->name('sales.user')
+    ->middleware(['auth']);
+// Route to get sales data for a specific payment method
+Route::get('sales/payment-method/{paymentMethod}', [SaleController::class, 'getSalesByPaymentMethod'])
+    ->name('sales.payment-method')
+    ->middleware(['auth']);

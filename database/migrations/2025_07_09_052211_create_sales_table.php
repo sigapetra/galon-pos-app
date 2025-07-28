@@ -22,6 +22,11 @@ return new class extends Migration
             $table->string('customer_address')->nullable(); // Alamat pelanggan (opsional, untuk pengantaran)
             $table->string('payment_method')->nullable(); // Metode pembayaran (misal: "Cash", "Transfer")
             $table->timestamps(); // created_at dan updated_at
+            $table->unsignedBigInteger('customer_id');
+            $table->unsignedBigInteger('vehicle_id');
+            $table->foreign('customer_id')->references('id')->on('customers');
+            $table->foreign('vehicle_id')->references('id')->on('vehicles');
+
         });
     }
 

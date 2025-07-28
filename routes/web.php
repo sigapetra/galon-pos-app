@@ -1,26 +1,93 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProductController; // <-- PASTIKAN BARIS INI ADA!
-use App\Http\Controllers\SaleController; // <-- PASTIKAN BARIS INI ADA!
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SaleController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\VehicleController;
 
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', fn() => view('welcome'));
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Dashboard
+Route::get('/dashboard', fn() => view('dashboard'))
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+// Authenticated Routes
+Route::middleware(['auth'])->group(function () {
+    // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-     // Cukup satu baris ini saja untuk semua rute CRUD Produk:
-    Route::resource('products', ProductController::class); // <-- HANYA PERTAHANKAN BARIS INI
+    // Resource CRUD Routes
+    Route::resources([
+        'products' => ProductController::class,
+        'customers' => CustomerController::class,
+        'vehicles' => VehicleController::class,
+        'sales'    => SaleController::class,
+    ]);
+
+    // Additional Sales Reports
+    Route::prefix('sales')->name('sales.')->controller(SaleController::class)->group(function () {
+        Route::get('/report', 'report')->name('report');
+        Route::get('/report/pdf', 'reportPdf')->name('report.pdf');
+        Route::get('/report/excel', 'reportExcel')->name('report.excel');
+        Route::get('/report/csv', 'reportCsv')->name('report.csv');
+        Route::get('/report/print', 'reportPrint')->name('report.print');
+
+        // Summary
+        Route::get('/report/summary', 'reportSummary')->name('report.summary');
+        Route::get('/report/summary/pdf', 'reportSummaryPdf')->name('report.summary.pdf');
+        Route::get('/report/summary/excel', 'reportSummaryExcel')->name('report.summary.excel');
+        Route::get('/report/summary/csv', 'reportSummaryCsv')->name('report.summary.csv');
+        Route::get('/report/summary/print', 'reportSummaryPrint')->name('report.summary.print');
+
+        // By Entity
+        Route::get('/report/vehicle', 'reportVehicle')->name('report.vehicle');
+        Route::get('/report/vehicle/pdf', 'reportVehiclePdf')->name('report.vehicle.pdf');
+        Route::get('/report/vehicle/excel', 'reportVehicleExcel')->name('report.vehicle.excel');
+        Route::get('/report/vehicle/csv', 'reportVehicleCsv')->name('report.vehicle.csv');
+        Route::get('/report/vehicle/print', 'reportVehiclePrint')->name('report.vehicle.print');
+
+        Route::get('/report/customer', 'reportCustomer')->name('report.customer');
+        Route::get('/report/customer/pdf', 'reportCustomerPdf')->name('report.customer.pdf');
+        Route::get('/report/customer/excel', 'reportCustomerExcel')->name('report.customer.excel');
+        Route::get('/report/customer/csv', 'reportCustomerCsv')->name('report.customer.csv');
+        Route::get('/report/customer/print', 'reportCustomerPrint')->name('report.customer.print');
+
+        Route::get('/report/product', 'reportProduct')->name('report.product');
+        Route::get('/report/product/pdf', 'reportProductPdf')->name('report.product.pdf');
+        Route::get('/report/product/excel', 'reportProductExcel')->name('report.product.excel');
+        Route::get('/report/product/csv', 'reportProductCsv')->name('report.product.csv');
+        Route::get('/report/product/print', 'reportProductPrint')->name('report.product.print');
+
+        Route::get('/report/user', 'reportUser')->name('report.user');
+        Route::get('/report/user/pdf', 'reportUserPdf')->name('report.user.pdf');
+        Route::get('/report/user/excel', 'reportUserExcel')->name('report.user.excel');
+        Route::get('/report/user/csv', 'reportUserCsv')->name('report.user.csv');
+        Route::get('/report/user/print', 'reportUserPrint')->name('report.user.print');
+
+        // Exporting
+        Route::get('/export', 'export')->name('export');
+        Route::get('/export/{format}', 'export')->name('export.format');
+        Route::get('/export/{format}/{startDate}/{endDate}', 'export')->name('export.date');
+        Route::get('/export/{format}/{startDate}/{endDate}/{customerId}', 'export')->name('export.customer');
+
+        // Filtering
+        Route::get('/customer/{customerId}', 'getSalesByCustomer')->name('customer');
+        Route::get('/vehicle/{vehicleId}', 'getSalesByVehicle')->name('vehicle');
+        Route::get('/date-range/{startDate}/{endDate}', 'getSalesByDateRange')->name('date-range');
+        Route::get('/product/{productId}', 'getSalesByProduct')->name('product');
+        Route::get('/user/{userId}', 'getSalesByUser')->name('user');
+    });
 });
 
 require __DIR__.'/auth.php';
