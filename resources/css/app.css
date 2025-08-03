@@ -1,3 +1,66 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom Dark Mode Classes untuk Bootstrap Integration */
+@layer components {
+  .bg-light {
+    @apply bg-white;
+  }
+  
+  .bg-dark { 
+    @apply bg-gray-900;
+  }
+  
+  .text-dark {
+    @apply text-gray-900;
+  }
+  
+  .text-light {
+    @apply text-white;
+  }
+  
+  /* Dark mode variants */
+  .dark .bg-light {
+    @apply bg-gray-900;
+  }
+  
+  .dark .text-dark {
+    @apply text-white;
+  }
+  
+  /* Bootstrap navbar dark mode */
+  .dark .navbar-light {
+    @apply bg-gray-800 !important;
+  }
+  
+  .dark .navbar-light .navbar-brand,
+  .dark .navbar-light .nav-link {
+    @apply text-white !important;
+  }
+  
+  .dark .navbar-light .nav-link:hover {
+    @apply text-gray-300 !important;
+  }
+  
+  .dark .dropdown-menu {
+    @apply bg-gray-800 border-gray-700 !important;
+  }
+  
+  .dark .dropdown-item {
+    @apply text-white !important;
+  }
+  
+  .dark .dropdown-item:hover {
+    @apply bg-gray-700 text-white !important;
+  }
+  
+  .dark .form-control {
+    @apply bg-gray-700 border-gray-600 text-white !important;
+  }
+  
+  .dark .form-control:focus {
+    @apply bg-gray-700 border-blue-500 text-white !important;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+  }
+}

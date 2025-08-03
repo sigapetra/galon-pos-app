@@ -24,55 +24,86 @@ class SaleController extends Controller
      * Show the form for creating a new resource.
      */
     public function create()
-    {
-        $customers = \App\Models\Customer::all();
-        $vehicles = \App\Models\Vehicle::all();
-
-        return view('sales.create', compact('customers', 'vehicles'));
-    }
+        {
+            $customers = Customer::all();
+            $vehicles = Vehicle::all();
+            return view('sales.create', compact('customers', 'vehicles'));
+        }
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-            $request->validate([
-            'date' => 'required|date',
+        $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'vehicle_id' => 'required|exists:vehicles,id',
-            'quantity' => 'required|integer|min:1',
+            'gallon_qty' => 'required|integer|min:1',
         ]);
 
-        $customer = \App\Models\Customer::findOrFail($request->customer_id);
-        $vehicle = \App\Models\Vehicle::findOrFail($request->vehicle_id);
+        $customer = Customer::findOrFail($request->customer_id);
+        $vehicle  = Vehicle::findOrFail($request->vehicle_id);
+        $qty      = $request->gallon_qty;
 
-        $distance = $customer->distance_km;
-        $fuel_used = $distance * 2 / $vehicle->fuel_efficiency;
-        $fuel_cost = round($fuel_used * $vehicle->fuel_price);
-        $toll = $vehicle->default_toll_fee;
+        // Harga galon dari pelanggan
+        $price_per_gallon = $customer->price_per_gallon ?? 0;
+        $jarak            = $customer->distance_km ?? 0;
 
-        $total_revenue = $request->quantity * $customer->price_per_gallon;
-        $product = \App\Models\Product::where('name', $customer->gallon_type)->first();
-        $total_cost = $request->quantity * ($product->cost_price ?? 0);
-        $profit = $total_revenue - $total_cost - $fuel_cost - $toll;
+        // Hitung biaya BBM
+        $fuel_needed = $jarak / $vehicle->fuel_efficiency;
+        $fuel_cost   = $fuel_needed * $vehicle->fuel_price;
 
-        \App\Models\Sale::create([
-            'user_id' => Auth::id(), // <- ID user yang sedang login
-            'product_id' => $product->id ?? null, // <- relasi ke tabel product
-            'date' => $request->date,
-            'customer_id' => $customer->id,
-            'vehicle_id' => $vehicle->id,
-            'quantity' => $request->quantity,
-            'total_revenue' => $total_revenue,
-            'total_cost' => $total_cost,
-            'fuel_cost' => $fuel_cost,
-            'toll_fee' => $toll,
-            'profit' => $profit,
-            'note' => null,
+        // Total harga = galon + biaya operasional
+        $total = ($price_per_gallon * $qty) + $fuel_cost + $vehicle->default_toll_fee;
+
+        Sale::create([
+            'customer_id'  => $request->customer_id,
+            'vehicle_id'   => $request->vehicle_id,
+            'gallon_qty'   => $qty,
+            'total_price'  => (int) $total,
         ]);
 
-        return redirect()->route('sales.create')->with('success', 'Transaksi berhasil dicatat!');
+        return redirect()->route('sales.index')->with('success', 'Transaksi berhasil!');
     }
+
+
+    /**
+     * Search for sales based on customer name, product name, or sale ID.
+     */
+
+    public function search(Request $request)
+    {
+        $query = $request->input('query');
+
+        $sales = Sale::with(['customer', 'product', 'vehicle'])
+            ->where('id', 'like', "%$query%")
+            ->orWhereHas('customer', function ($q) use ($query) {
+                $q->where('name', 'like', "%$query%");
+            })
+            ->orWhereHas('product', function ($q) use ($query) {
+                $q->where('name', 'like', "%$query%");
+            })
+            ->get();
+
+        return view('sales.index', compact('sales'));
+    }
+    /**
+     * Generate a sales report.
+     */
+    public function report(Request $request)
+    {
+        $sales = Sale::with(['customer', 'vehicle', 'product'])
+            ->when($request->has('start_date'), function ($query) use ($request) {
+                $query->whereDate('date', '>=', $request->input('start_date'));
+            })
+            ->when($request->has('end_date'), function ($query) use ($request) {
+                $query->whereDate('date', '<=', $request->input('end_date'));
+            })
+            ->get();
+
+        return view('sales.report', compact('sales'));
+    }
+
 
     /**
      * Display the specified resource.

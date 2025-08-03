@@ -1,5 +1,6 @@
 <?php
-
+// web.php
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProductController;
@@ -7,27 +8,22 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\VehicleController;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
-
 Route::get('/', fn() => view('welcome'));
 
-// Dashboard
-Route::get('/dashboard', fn() => view('dashboard'))
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+Route::middleware(['auth', 'verified'])->group(function () {
 
-// Authenticated Routes
-Route::middleware(['auth'])->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [SaleController::class, 'index'])->name('dashboard');
+
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/profile/password', [ProfileController::class, 'editPassword'])->name('profile.password.edit');
+    Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');Route::post('/profile/theme-toggle', [ProfileController::class, 'toggleTheme'])->name('profile.toggleTheme');
+    Route::get('/profile/theme', [ProfileController::class, 'getTheme'])->name('profile.getTheme');
 
-    // Resource CRUD Routes
+    // Resource Routes
     Route::resources([
         'products' => ProductController::class,
         'customers' => CustomerController::class,
@@ -35,27 +31,35 @@ Route::middleware(['auth'])->group(function () {
         'sales'    => SaleController::class,
     ]);
 
-    // Additional Sales Reports
+    // Sales Report Routes
     Route::prefix('sales')->name('sales.')->controller(SaleController::class)->group(function () {
+        Route::get('/search', 'search')->name('search'); 
         Route::get('/report', 'report')->name('report');
         Route::get('/report/pdf', 'reportPdf')->name('report.pdf');
         Route::get('/report/excel', 'reportExcel')->name('report.excel');
         Route::get('/report/csv', 'reportCsv')->name('report.csv');
         Route::get('/report/print', 'reportPrint')->name('report.print');
 
-        // Summary
         Route::get('/report/summary', 'reportSummary')->name('report.summary');
         Route::get('/report/summary/pdf', 'reportSummaryPdf')->name('report.summary.pdf');
         Route::get('/report/summary/excel', 'reportSummaryExcel')->name('report.summary.excel');
         Route::get('/report/summary/csv', 'reportSummaryCsv')->name('report.summary.csv');
         Route::get('/report/summary/print', 'reportSummaryPrint')->name('report.summary.print');
 
-        // By Entity
-        Route::get('/report/vehicle', 'reportVehicle')->name('report.vehicle');
-        Route::get('/report/vehicle/pdf', 'reportVehiclePdf')->name('report.vehicle.pdf');
-        Route::get('/report/vehicle/excel', 'reportVehicleExcel')->name('report.vehicle.excel');
-        Route::get('/report/vehicle/csv', 'reportVehicleCsv')->name('report.vehicle.csv');
-        Route::get('/report/vehicle/print', 'reportVehiclePrint')->name('report.vehicle.print');
+        // Additional Routes for Sales        
+        Route::resource('vehicles', VehicleController::class)->except(['edit', 'update']);
+        Route::get('/report/vehicle/{vehicleId}', 'getSalesByVehicle')->name('report.vehicle.filter');
+        Route::get('/report/vehicle/{vehicleId}/pdf', 'getSalesByVehiclePdf')->name('report.vehicle.filter.pdf');
+        Route::get('/report/vehicle/{vehicleId}/excel', 'getSalesByVehicleExcel')->name('report.vehicle.filter.excel');
+        Route::get('/report/vehicle/{vehicleId}/csv', 'getSalesByVehicleCsv')->name('report.vehicle.filter.csv');   
+        Route::get('/report/vehicle/{vehicleId}/print', 'getSalesByVehiclePrint')->name('report.vehicle.filter.print');
+        Route::get('/report/vehicle/{vehicleId}/export', 'exportByVehicle')->name('report.vehicle.export');
+        Route::get('/report/vehicle/{vehicleId}/export/{format}', 'exportByVehicle')->name('report.vehicle.export.format');
+        Route::get('/report/vehicle/{vehicleId}/export/{format}/{startDate}/{endDate}', 'exportByVehicle')->name('report.vehicle.export.date');
+        Route::get('/report/vehicle/{vehicleId}/export/{format}/{startDate}/{endDate}/{customerId}', 'exportByVehicle')->name('report.vehicle.export.customer');
+        Route::get('/report/vehicle/{vehicleId}/filter', 'filterSalesByVehicle')->name('report.vehicle.filter.sales');
+        Route::get('/report/vehicle/{vehicleId}/filter/pdf', 'filterSalesByVehiclePdf')->name('report.vehicle.filter.sales.pdf');
+        
 
         Route::get('/report/customer', 'reportCustomer')->name('report.customer');
         Route::get('/report/customer/pdf', 'reportCustomerPdf')->name('report.customer.pdf');
@@ -87,6 +91,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/date-range/{startDate}/{endDate}', 'getSalesByDateRange')->name('date-range');
         Route::get('/product/{productId}', 'getSalesByProduct')->name('product');
         Route::get('/user/{userId}', 'getSalesByUser')->name('user');
+
+        
+
     });
 });
 

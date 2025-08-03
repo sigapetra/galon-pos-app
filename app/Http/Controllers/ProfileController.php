@@ -8,43 +8,26 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
-use App\Models\Product;
-
 
 class ProfileController extends Controller
 {
-
-    public function create()
+    // Toggle dark/light mode
+    public function toggleTheme(Request $request)
     {
-        // Mengembalikan view 'products.create' yang berisi form penambahan produk
-        return view('products.create');
+        $user = $request->user();
+        $user->theme = $user->theme === 'dark' ? 'light' : 'dark';
+        $user->save();
+
+        return back();
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    // Ambil tema aktif
+    public function getTheme(Request $request)
     {
-        // 1. Validasi Input Request
-        // Ini sangat penting untuk keamanan dan integritas data!
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255', // Nama wajib diisi, string, maks 255 karakter
-            'description' => 'nullable|string', // Deskripsi boleh kosong, string
-            'price' => 'required|numeric|min:0|max:99999999.99', // Harga wajib, angka, min 0, format desimal 10,2
-            'stock' => 'required|integer|min:0', // Stok wajib, angka bulat, min 0
-        ]);
-
-        // 2. Simpan Data ke Database
-        // Menggunakan Mass Assignment
-        Product::create($validatedData);
-
-        // 3. Redirect ke Halaman Daftar Produk dengan pesan sukses
-        return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan!');
+        return response()->json(['theme' => $request->user()->theme]);
     }
 
-    /**
-     * Display the user's profile form.
-     */
+    // Form edit profil
     public function edit(Request $request): View
     {
         return view('profile.edit', [
@@ -52,9 +35,7 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * Update the user's profile information.
-     */
+    // Update profil
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $request->user()->fill($request->validated());
@@ -68,9 +49,7 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
-    /**
-     * Delete the user's account.
-     */
+    // Hapus akun
     public function destroy(Request $request): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [
@@ -80,7 +59,6 @@ class ProfileController extends Controller
         $user = $request->user();
 
         Auth::logout();
-
         $user->delete();
 
         $request->session()->invalidate();
