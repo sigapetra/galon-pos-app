@@ -13,21 +13,19 @@ class PasswordUpdateTest extends TestCase
 
     public function test_password_can_be_updated(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'password' => bcrypt('password'),
+        ]);
 
-        $response = $this
-            ->actingAs($user)
-            ->from('/profile')
-            ->put('/password', [
-                'current_password' => 'password',
-                'password' => 'new-password',
-                'password_confirmation' => 'new-password',
-            ]);
+        $response = $this->actingAs($user)->post('/user/password', [
+            '_token' => csrf_token(),
+            'current_password' => 'password',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ]);
 
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
-
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect('/profile');
         $this->assertTrue(Hash::check('new-password', $user->refresh()->password));
     }
 

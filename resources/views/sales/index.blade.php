@@ -1,56 +1,53 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Sales') }}
-        </h2>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-
-            @if($sales->count())
-                <table class="table table-bordered w-full">
-                    <thead>
-                        <tr>
-                            <th>Tanggal</th>
-                            <th>Pelanggan</th>
-                            <th>Jenis Galon</th>
-                            <th>Kendaraan</th>
-                            <th>Jumlah</th>
-                            <th>Profit</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($sales as $sale)
-                            <tr>
-                                <td>{{ $sale->date }}</td>
-                                <td>{{ $sale->customer->name }}</td>
-                                <td>{{ $sale->product->name ?? '-' }}</td>
-                                <td>{{ $sale->vehicle->name }}</td>
-                                <td>{{ $sale->quantity }}</td>
-                                <td>Rp {{ number_format($sale->profit, 0, ',', '.') }}</td>
-                                <td>
-                                    <form action="{{ route('sales.destroy', $sale->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-danger btn-sm">Hapus</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            @else
-                <p>Belum ada transaksi dicatat.</p>
-            @endif
-
-            <div class="mt-4">
-                <a href="{{ route('sales.create') }}" class="btn btn-primary">Input Transaksi Baru</a>
-            </div>
-        </div>
+@section('content')
+<div class="container mx-auto px-4 py-6">
+    <div class="flex justify-between items-center mb-4">
+        <h1 class="text-2xl font-bold">Daftar Transaksi</h1>
+        <a href="{{ route('sales.create') }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">+ Tambah Transaksi</a>
     </div>
-</x-app-layout>
+
+    @if(session('success'))
+        <div class="bg-green-100 text-green-800 px-4 py-2 rounded mb-4">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">
+        <table class="min-w-full text-left border">
+            <thead>
+                <tr class="bg-gray-100 dark:bg-gray-700">
+                    <th class="px-4 py-2 border">#</th>
+                    <th class="px-4 py-2 border">Pelanggan</th>
+                    <th class="px-4 py-2 border">Kendaraan</th>
+                    <th class="px-4 py-2 border">Jumlah</th>
+                    <th class="px-4 py-2 border">Harga Satuan</th>
+                    <th class="px-4 py-2 border">Total</th>
+                    <th class="px-4 py-2 border">Tanggal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($sales as $sale)
+                <tr>
+                    <td class="px-4 py-2 border">{{ $loop->iteration }}</td>
+                    <td class="px-4 py-2 border">{{ $sale->customer->name }}</td>
+                    <td class="px-4 py-2 border">{{ $sale->vehicle->name }}</td>
+                    <td class="px-4 py-2 border">{{ $sale->quantity }}</td>
+                    <td class="px-4 py-2 border">Rp {{ number_format($sale->price_per_item, 0, ',', '.') }}</td>
+                    <td class="px-4 py-2 border">Rp {{ number_format($sale->total_amount, 0, ',', '.') }}</td>
+                    <td class="px-4 py-2 border">{{ $sale->created_at->format('d-m-Y') }}</td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="7" class="text-center py-4">Belum ada transaksi</td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-4">
+        {{ $sales->links() }}
+    </div>
+</div>
+@endsection

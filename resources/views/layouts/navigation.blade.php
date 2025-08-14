@@ -12,9 +12,12 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
+                    <nav>
+                    <a href="{{ route('dashboard') }}" class="flex items-center space-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7m-2 2v8a2 2 0 002 2h2a2 2 0 002-2v-6a2 2 0 00-2-2h-4" /></svg>
+                        <span>Dashboard</span>
+                    </a>
+                    </nav>
                     <x-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">
                         {{ __('Sales') }}
                     </x-nav-link>

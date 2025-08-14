@@ -26,6 +26,9 @@ return new class extends Migration
             $table->unsignedBigInteger('vehicle_id');
             $table->foreign('customer_id')->references('id')->on('customers');
             $table->foreign('vehicle_id')->references('id')->on('vehicles');
+            $table->integer('gallons_sold'); // Jumlah galon yang terjual
+            $table->decimal('price_per_gallon', 10, 2); // Harga per galon saat penjualan terjadi
+            $table->integer('distance_km'); // Jarak tempuh dalam kilometer
 
         });
     }

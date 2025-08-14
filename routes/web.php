@@ -13,6 +13,7 @@ Route::get('/', fn() => view('welcome'));
 Route::middleware(['auth', 'verified'])->group(function () {
 
     // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [SaleController::class, 'index'])->name('dashboard');
 
     // Profile
